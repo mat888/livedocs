@@ -82,6 +82,7 @@ class Place extends ModTemplate {
     }
   }
 
+  // orders transactions in case and they have tiles in common and timestamps are equal
   transactionOrdinal(tx) {
     const orderPrecision = 10**6;
     const sigHash = parseInt(createHash("md5").update(tx.signature).digest("hex"), 16) % orderPrecision;
