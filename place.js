@@ -25,7 +25,7 @@ class Place extends ModTemplate {
       return;
     }
     await super.render(app);
-    this.placeUI.render(); // render all non-network stuff
+    this.placeUI.render();
   }
 
   async onPeerServiceUp(app, peer, service={}) {
@@ -93,10 +93,13 @@ class Place extends ModTemplate {
     if (this.app.BROWSER) {
       this.placeUI.updateTileRendering(i, j, updatedTileState);
     } else if (status === "confirmed") {
-      const sql = "UPDATE tiles SET red = $red, green = $green, blue = $blue, ordinal = $ordinal WHERE i = $i AND j = $j";
+      const sql = `UPDATE tiles
+                   SET red = $red, green = $green, blue = $blue, ordinal = $ordinal
+                   WHERE i = $i AND j = $j`;
       const components = this.colorToComponents(updatedTileState.confirmed.color);
       const params = {
-        $red: components[0], $green: components[1], $blue: components[2], $ordinal: ordinal, $i: i, $j: j
+        $red: components[0], $green: components[1], $blue: components[2], $ordinal: ordinal,
+        $i: i, $j: j
       };
       this.app.storage.executeDatabase(sql, params, "place");
     }
