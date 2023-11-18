@@ -55,14 +55,14 @@ class Place extends ModTemplate {
     console.log("*+* BEGIN Place.onConfirmation: ");
     let txmsg = tx.returnMessage();
     try {
-      if (conf == 0) { 
-		    if (txmsg.request === "paint") {
-		      this.receivePaintingTransaction(tx);
-		    }
+      if (conf == 0) {
+        if (txmsg.request === "paint") {
+          this.receivePaintingTransaction(tx);
+        }
       }
-	  } catch (err) {
+    } catch (err) {
       console.error("In" + this.name + ".onConfirmation: " + err);
-	  }
+    }
   }
 
   async sendPaintingTransaction(paintedTiles) {
