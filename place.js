@@ -77,7 +77,7 @@ class Place extends ModTemplate {
   receivePaintingTransaction(tx) {
     console.log("*+* Received painting transaction");
     const txOrdinal = this.transactionOrdinal(tx);
-    for (tile of tx.returnMessage().data) {
+    for (const tile of tx.returnMessage().data) {
       this.updateTile(tile, "confirmed", txOrdinal);
     }
   }
