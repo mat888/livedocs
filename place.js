@@ -39,7 +39,7 @@ class Place extends ModTemplate {
 
   loadTilegridFromPeer(peer) {
     const sql = "SELECT * FROM tiles";
-    this.sendPeerDatabaseRequestWithFilter(this.name, sql, async (res) => {
+    this.sendPeerDatabaseRequestWithFilter(this.name, sql, (res) => {
       if (res.rows) {
         res.rows.forEach((row) => {
           this.updateTile(
