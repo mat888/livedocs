@@ -52,7 +52,6 @@ class Place extends ModTemplate {
   }
 
   async onConfirmation(blk, tx, conf) {
-    console.log("*+* BEGIN Place.onConfirmation: ");
     let txmsg = tx.returnMessage();
     try {
       if (conf == 0) {
@@ -61,12 +60,11 @@ class Place extends ModTemplate {
         }
       }
     } catch (err) {
-      console.error("In" + this.name + ".onConfirmation: " + err);
+      console.error("In " + this.name + ".onConfirmation: " + err);
     }
   }
 
   async sendPaintingTransaction(paintedTiles) {
-    console.log("*+* Sending painting transaction: ", paintedTiles);
     let newtx = await this.app.wallet.createUnsignedTransaction();
     newtx.msg = {module: this.name, request: "paint", data: paintedTiles};
     await newtx.sign();
@@ -75,7 +73,6 @@ class Place extends ModTemplate {
   }
 
   receivePaintingTransaction(tx) {
-    console.log("*+* Received painting transaction");
     const txOrdinal = this.transactionOrdinal(tx);
     for (const tile of tx.returnMessage().data) {
       this.updateTile(tile, "confirmed", txOrdinal);
@@ -89,7 +86,7 @@ class Place extends ModTemplate {
     return tx.timestamp * orderPrecision + sigHash;
   }
 
-  updateTile(tile, status, ordinal=null) {
+  async updateTile(tile, status, ordinal=null) {
     const [i, j, updatedTileState] = this.gridState.updateTile(tile, status, ordinal);
     if (this.app.BROWSER) {
       this.placeUI.updateTileRendering(i, j, updatedTileState);
@@ -101,7 +98,7 @@ class Place extends ModTemplate {
         $i: i, $j: j,
         $red: components[0], $green: components[1], $blue: components[2], $ordinal: ordinal,
       };
-      this.app.storage.executeDatabase(sql, params, "place");
+      await this.app.storage.executeDatabase(sql, params, "place");
     }
   }
 
