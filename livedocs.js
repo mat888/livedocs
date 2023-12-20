@@ -29,19 +29,13 @@ class Livedocs extends ModTemplate {
 		this.livedocs_ui.attachEvents();
 
 		let userPubKey = this.publicKey;
-		document.getElementById("pubKey").innerHTML = userPubKey;
-		document.getElementById("recipient").value  = userPubKey;
-		document.getElementById("peer-recipient").value  = userPubKey;
+		document.getElementById("publicKey").innerHTML  = userPubKey;
+		document.getElementById("txRecipient").value    = userPubKey;
+		document.getElementById("relayRecipient").value = userPubKey;
+
+//		this.app.keychain.addKey("nKXr6TyzQmSLFWnqcQLA8WDcWxEDNgAGRKZnSEH3CD18", {watched: true});
 	}
 
-	returnServices() {
-		let services = [];
-		// servers with chat service run plaintext community chat groups
-		if (this.app.BROWSER == 0) {
-			services.push(new PeerService(null, "test_request", "request/service description?"));
-		}
-		return services;
-	}
 
 	async sendTx(recipient=this.publicKey, msg_data="") {
 		let newtx = await this.app.wallet.createUnsignedTransaction(recipient);
@@ -58,10 +52,8 @@ class Livedocs extends ModTemplate {
 		// 0 confs occurs during the first block the transaction is included in
 
 		// this function only continues if on the first confirmation
-		console.log(tx);
 		if (conf > 0) { return; }
 
-		// 
 		if (this.app.BROWSER) {
 			let txmsg = tx.returnMessage();
 			let sender = tx.from[0].publicKey;
@@ -75,13 +67,9 @@ class Livedocs extends ModTemplate {
 	}
 
 
-	sendRelayMessage(recipient=null, data="") {
-		/*
-		await this.app.network.sendRequestAsTransaction(message="place test req", "data");
-		console.log(this);
-		*/
+	sendRelayMessage(publicKey, data="") {
 		this.app.connection.emit("relay-send-message", {
-			recipient,
+			recipient: publicKey,
 			request: "livedocs request",
 			data: data
 		});
@@ -89,25 +77,22 @@ class Livedocs extends ModTemplate {
 	}
 
 	async handlePeerTransaction(app, tx=null, peer, callback=null) {
-		if (!tx.returnMessage().request == "livedocs request") {
+		if (tx.returnMessage().request != "livedocs request") {
 			return;
 		}
 		if (this.app.BROWSER) {
-			let payload =  tx.returnMessage();
-			console.log(" == handlepeer == \n", payload);
-			console.log(payload.data);
+			let message = tx.returnMessage().data;
 
-			let message = payload.data.message;
-			console.log(message);
+			// If message has encrypted flag, decrypt message.encMsg
+			if (message.encrypted) {
+				message = message.encMsg;
 
-			if (payload.data.encrypted) {
-				console.log("encrypted message detected");
 				let sender = tx.from[0].publicKey;
 				let decrypted = this.app.keychain.decryptMessage(sender, message);
+
 				message = decrypted;
-				console.log("sender: ", sender, " decrypted: ", decrypted);
-				console.log("keychain: ", this.app.keychain);
 			}
+
 			this.livedocs_ui.insertDOM("handlePeer_output", message);
 		}
 	}
@@ -120,11 +105,11 @@ class Livedocs extends ModTemplate {
 
 	encryptedMessage(publicKey, message="test_enc_message") {
 		let encrypted_data = this.app.keychain.encryptMessage(publicKey, message);
-		let payload = {};
+		let encr_obj = {};
 		console.log(this.app.keychain);
-		payload.encrypted = true;
-		payload.message = encrypted_data;
-		this.sendRelayMessage(publicKey, payload);
+		encr_obj.encrypted = true;
+		encr_obj.encMsg = encrypted_data;
+		this.sendRelayMessage(publicKey, encr_obj);
 	}
 	/*
 	async handlePeerTransaction(app, tx=null, peer, callback=null) {
